@@ -150,11 +150,11 @@ class GetComments(APIView):
 class DeleteComment(APIView):
     permission_classes = [IsAuthenticated]
 
-    def delete(self, request,  comment_id):
+    def delete(self, request,  id):
         try:
 
             # Check if the comment exists
-            comment = Comment.objects.get(id=comment_id,  user=request.user)
+            comment = Comment.objects.get(id=id,  user=request.user)
             print(comment,"comment")
             # Delete the comment
             comment.delete()
