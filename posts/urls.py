@@ -9,6 +9,10 @@ urlpatterns = [
     path('createpost',CreatePost.as_view(),name='createpost'),
     path('deletepost/<uuid:id>/', DeletePost.as_view(), name='deletepost'),
     path('recommended', RecommendedPostView.as_view(), name='recommended'),
+    path('savepost', SavePost.as_view(), name='savepost'),
+    path('usersavedpost', UserSavedPosts.as_view(), name='usersavedpost'),
+
+
 
 
     path('likepost', LikePost.as_view(), name='likepost'),
@@ -28,6 +32,11 @@ urlpatterns = [
     path('followings/<int:id>/', FollowingListView.as_view(), name='following-list'),
     path('followers/<int:id>/', FollowerListView.as_view(), name='follower-list'),
     path('contacts', ContactListvView.as_view(), name='followers-following'),
+
+
+    
+    path('notifications/', NotificationsView.as_view(), name='notifications'),
+    path('notifications-seen/<int:pk>/', NotificationsSeenView.as_view(), name='notifications-seen'),
 
 
     

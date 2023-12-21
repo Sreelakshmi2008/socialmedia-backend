@@ -3,24 +3,19 @@ from rest_framework.response import Response
 from rest_framework import status,generics
 from .models import Post, PostMedia,Comment,Like
 from .serializer import PostCreationSerializer,CommentSerializer,GetPostSerializer,PostMediaSerializer
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import  IsAuthenticated
 from rest_framework.parsers import MultiPartParser
 from authentication.models import CustomUser
-from django.core.files.base import ContentFile
-import requests
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from django.core.files.uploadedfile import InMemoryUploadedFile
-import base64
-from io import BytesIO
-from PIL import Image
-from django.http import HttpResponse
 from .models import HashTag,Follow
 from django.db.models import Q
 from chat.models import *
 from .serializer import *
+from django.shortcuts import get_object_or_404
+
 
 class CreatePost(APIView):
     parser_classes = [MultiPartParser]
@@ -87,6 +82,12 @@ class LikePost(APIView):
                 return Response({"message": "You have unliked liked this post","like_count": like_count}, status=status.HTTP_200_OK)
 
             Like.objects.create(user=request.user,post=p)
+            Notification.objects.create(
+                        from_user=request.user,
+                        to_user=p.user,
+                        post=p,
+                        notification_type=Notification.NOTIFICATION_TYPES[0][0],
+                    ) 
             print("liked")
             like_count = self.get_like_count(p)
             return Response({"message": "You have liked this post","like_count": like_count}, status=status.HTTP_200_OK)
@@ -119,6 +120,12 @@ class CommentPost(APIView):
             serializer = CommentSerializer(data=comment_data,context={'request':request})
             if serializer.is_valid():
                 serializer.save()
+                Notification.objects.create(
+                        from_user=request.user,
+                        to_user=post.user,
+                        post=post,
+                        notification_type=Notification.NOTIFICATION_TYPES[3][0],
+                    ) 
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -257,7 +264,12 @@ class FollowUnfollowUserView(APIView):
             follow_instance = Follow(follower=logged_in_user, following=user_to_follow)
             follow_instance.save()
             print("followed",follow_instance)
-           
+            n=Notification.objects.create(
+                        from_user=request.user,
+                        to_user=user_to_follow,
+                        notification_type=Notification.NOTIFICATION_TYPES[2][0],
+                    ) 
+            print(n)
             return Response(
                 {"detail": "You are now following this user."},
                 status=status.HTTP_201_CREATED,
@@ -337,3 +349,76 @@ class FollowerListView(generics.ListAPIView):
         user_id = self.kwargs["id"]
         user = CustomUser.objects.get(id=user_id)
         return Follow.objects.filter(following=user)
+    
+
+
+
+class SavePost(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        post_id = request.data.get('id')
+        post = get_object_or_404(Post, id=post_id)
+        saved_post, created = SavedPost.objects.get_or_create(user=request.user, post=post)
+
+        if created:
+            print("saved")
+            serializer = SavedPostSerializer(saved_post)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print("deleted from saved")
+            saved_post.delete()
+            return Response({'message': 'Post removed from saved posts'}, status=status.HTTP_200_OK)
+        
+
+
+
+class UserSavedPosts(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user_saved_posts = SavedPost.objects.filter(user=request.user)
+        post_serializer = GetPostSerializer([saved_post.post for saved_post in user_saved_posts], many=True,context={'request':request})
+        print(post_serializer.data,"saved postss")
+        return Response(post_serializer.data, status=status.HTTP_200_OK)
+    
+
+
+
+class NotificationsView(generics.ListAPIView):
+    permission_classes = [  IsAuthenticated]
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return (
+            Notification.objects.filter(to_user=user)
+            .exclude(is_seen=True)
+            .order_by("-created")
+        )
+
+    def get(self, request, *args, **kwargs):
+        try:
+            queryset = self.get_queryset()
+            serializer = self.get_serializer(queryset, many=True)
+            print(serializer.data,"all notissss")
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+class NotificationsSeenView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = NotificationSerializer
+
+    def get_queryset(self):
+        return Notification.objects.all()  # Override the get_queryset method
+
+    def post(self, request, pk, *args, **kwargs):
+        try:
+            notification = Notification.objects.get(pk=pk)
+            notification.is_seen = True
+            notification.save()
+            return Response(status=status.HTTP_200_OK)
+        except Notification.DoesNotExist:
+            return Response("Not found in the database", status=status.HTTP_404_NOT_FOUND)

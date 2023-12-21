@@ -18,6 +18,15 @@ urlpatterns = [
 
     path('changeprofile',ChangeProfilePicView.as_view(),name='changeprofile'),
     path('editprofile',EditProfileView.as_view(),name='editprofile'),
+       
+    path('sentotp',OtpSent.as_view(),name='sentotp'),
+    path('verifyotp',OtpVerify.as_view(),name='verifyotp'),
+    path('changepass',ChangePassword.as_view(),name='changepass'),
+
+
+   
+    path('joining-month-count/', JoiningMonthCountView.as_view(), name='joining-month-count'),
+
 
 
          

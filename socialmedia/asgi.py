@@ -19,7 +19,7 @@ from channels.routing import ProtocolTypeRouter,URLRouter
 from channels.security.websocket import AllowedHostsOriginValidator
 
 from chat import routing
-
+from posts import routing as  postrouting
 
 django_asgi_application = get_asgi_application()
 
@@ -28,7 +28,7 @@ application = ProtocolTypeRouter(
         'http': django_asgi_application,
         'websocket': JWTAuthMiddlewareStack(
             AllowedHostsOriginValidator(
-                JwtAuthMiddleware(URLRouter(routing.websocket_urlpatterns))
+                JwtAuthMiddleware(URLRouter(routing.websocket_urlpatterns+postrouting.websocket_urlpatterns))
             ),
         ),
     }

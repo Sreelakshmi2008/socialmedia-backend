@@ -28,13 +28,13 @@ class PostMedia(models.Model):
 
 
 class Like(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
+    post = models.ForeignKey(Post,on_delete=models.CASCADE)
     liked_at = models.DateTimeField(auto_now_add=True)
 
     
 class Comment(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser,on_delete=models.CASCADE)
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     content =  models.TextField()
     commented_at = models.DateTimeField(auto_now_add=True)
@@ -67,3 +67,37 @@ class Follow(models.Model):
 
     def following_count(self):
         return self.following.count()
+
+
+
+
+class SavedPost(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)  
+
+    class Meta:
+        unique_together = ('user', 'post') 
+
+
+
+
+
+class Notification(models.Model):
+   NOTIFICATION_TYPES = [
+        ('like', 'New Like'),
+        ('post', 'New Post'),
+        ('follow', 'New Follow'),
+        ('comment', 'New Comment'),
+       
+    ]
+   
+   from_user = models.ForeignKey(CustomUser, related_name="notification_from", on_delete=models.CASCADE, null=True)
+   to_user = models.ForeignKey(CustomUser, related_name="notification_to", on_delete=models.CASCADE, null=True)
+   notification_type = models.CharField(choices=NOTIFICATION_TYPES, max_length=20)
+   post  = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='+', blank=True, null=True)
+   comment  = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='+', blank=True, null=True)
+   created = models.DateTimeField(auto_now_add=True)
+   is_seen = models.BooleanField(default=False)
+   
+   def __str__(self):
+        return f"{self.from_user} sent a {self.notification_type} notification to {self.to_user}"

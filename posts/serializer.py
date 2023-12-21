@@ -25,10 +25,15 @@ class GetPostSerializer(serializers.ModelSerializer):
     hashtags = HashTagSerializer(many=True,read_only=True)
     user=GetUserSerializer(read_only=True)
     is_following_author = serializers.SerializerMethodField()
+    is_liked_or_not = serializers.SerializerMethodField()
+    like_count = serializers.SerializerMethodField()
+    saved_or_not = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ['id', 'user', 'caption', 'created_at', 'updated_at', 'post_media','hashtags','is_following_author']
+        fields = ['id', 'user', 'caption', 'created_at', 'updated_at', 'post_media','hashtags','is_following_author',
+                  'is_liked_or_not','like_count','saved_or_not'
+                  ]
     
 
     def get_user(self,obj):
@@ -48,10 +53,33 @@ class GetPostSerializer(serializers.ModelSerializer):
             except Follow.DoesNotExist:
                 return False
         return False
+    
+
+    def get_is_liked_or_not(self, obj):
+        request_user = self.context['request'].user
+        user = obj.user
+        if request_user.is_authenticated:
+            try:
+                like_instance = Like.objects.get(user=request_user, post=obj)
+                return True
+            except Like.DoesNotExist:
+                return False
+        return False
+
+    def get_like_count(self, obj):
+        return Like.objects.filter(post=obj).count()
 
 
 
-
+    def get_saved_or_not(self,obj):
+        request_user = self.context['request'].user
+        if request_user.is_authenticated:
+            try:
+                save_instance = SavedPost.objects.get(user=request_user,post=obj)
+                return True
+            except SavedPost.DoesNotExist:
+                return False
+        return False
 
 
 
@@ -141,6 +169,7 @@ class FollowSerializer(serializers.ModelSerializer):
         fields = ["follower", "following", "created_at"]
 
 
+
 # serializers.py
 
 class FollowerSerializer(serializers.ModelSerializer):
@@ -172,7 +201,24 @@ class FollowingSerializer(serializers.ModelSerializer):
 
 
 
+class SavedPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedPost
+        fields = '__all__'
 
 
 
 
+class NotificationSerializer(serializers.ModelSerializer):
+    from_user = AccountSerializer(read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = '__all__'
+        read_only_fields = ('notification_type',)
+
+    def validate_notification_type(self, value):
+        choices = dict(Notification.NOTIFICATION_TYPES)
+        if value not in choices:
+            raise serializers.ValidationError("Invalid notification type.")
+        return value

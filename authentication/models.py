@@ -25,11 +25,12 @@ class CustomUser(AbstractUser):
     name = models.CharField(max_length=255, blank=True)
 
     username = models.CharField(max_length=30, unique=True)
-
+     
+    date_joined = models.DateTimeField(auto_now_add=True)
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
-    is_deleted = models.BooleanField(default=False)  # New field for deletion status
-
+    is_deleted = models.BooleanField(default=False)  # New field    or deletion status
+    
 
 
     objects = CustomUserManager()

@@ -13,6 +13,11 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework.parsers import MultiPartParser
 from rest_framework.decorators import api_view, permission_classes
 import requests
+from authentication import helper
+from .serializers import *
+from django.db.models import Count
+from django.db.models.functions import ExtractMonth, ExtractYear
+from django.utils import timezone
 
 # user regiatration  view
 class RegisterView(APIView):
@@ -184,3 +189,74 @@ class EditProfileView(APIView):
         u.save()
         return Response({'message':"success"},status=200)
     
+
+class OtpSent(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self,request):
+        print(request.user)
+        user = request.user
+        mobile = user.phone
+        if user:  #if user exists
+            helper.send('+91' + str(mobile))
+            return Response({'message':"success"},status=200)
+        else:
+            return Response({'message':"User Not Found"},status=401)
+            
+
+class OtpVerify(APIView):
+    permission_classes=[IsAuthenticated]
+    def post(self, request):
+        # Extract 'otp' from the query parameters
+     
+        otp = request.data.get('otp')
+        user = request.user
+        mobile = user.phone
+        print(mobile,otp)
+        if helper.check('+91' + str(mobile), otp):
+                print(user,"this is user")
+                return Response({'message':"succes"},status=200)
+        else:
+                return Response({'message':"Invalid Otp"},status=400)
+
+
+class ChangePassword(APIView):
+    permission_classes=[IsAuthenticated]
+    authentication_classes=[JWTAuthentication]
+    
+    def patch(self,request):
+        print(request.data)
+        u = request.user
+        if u:
+            password = request.data['password']
+            print(u.password," before changing")
+            u.password = make_password(password)
+            u.save()
+            print(u.password," after changing")
+            
+            return Response({'message':"success"},status=200)
+        else:
+            return Response({'message':"fail"},status=status.HTTP_400_BAD_REQUEST)
+
+    
+
+from django.db.models import F
+
+
+   
+class JoiningMonthCountView(APIView):
+    
+    def get(self, request):
+        
+        user_counts = (
+            CustomUser.objects.annotate(
+                joining_month=F('date_joined__month'),
+                joining_year=F('date_joined__year')
+            )
+            .values('joining_month', 'joining_year')
+            .annotate(user_count=Count('id'))
+            .order_by('joining_year', 'joining_month')
+        )
+        print(user_counts)
+        serializer = JoiningMonthCountSerializer(user_counts, many=True)
+
+        return Response(serializer.data)
