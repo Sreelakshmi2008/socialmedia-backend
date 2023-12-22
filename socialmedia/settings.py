@@ -99,11 +99,12 @@ ASGI_APPLICATION = 'socialmedia.asgi.application'
 
 DATABASES = {
     'default': {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "media",
-        "USER": "root",
-        "PASSWORD": "1234",
-        "HOST": "localhost",
+         'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.environ.get('DB_NAME', 'media'),
+        'USER': os.environ.get('DB_USER', 'root'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', '1234'),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '3306'),
         
         
     }
