@@ -11,7 +11,9 @@ from authentication.models import CustomUser
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from posts.models import *
 from posts.serializer import *
-
+from django.db.models.functions import ExtractMonth,ExtractYear,ExtractDay,TruncDate,TruncMonth,TruncYear
+from django.db.models import F,Q ,Count
+from authentication.api.serializers import JoiningMonthCountSerializer
 # Create your views here.
 
 
@@ -113,3 +115,20 @@ class AdminUserPostsDetails(APIView):
         print(serializer.data)
         return Response(serializer.data,status=200)
 
+
+
+
+class UserCountByMonth(APIView):
+       def get(self, request):
+        user_counts = (
+            CustomUser.objects.annotate(
+                joining_month=ExtractMonth('date_joined'),
+                joining_year=ExtractYear('date_joined')
+            )
+            .values('joining_month', 'joining_year')
+            .annotate(user_count=Count('id'))
+            .order_by('joining_year', 'joining_month')
+        )
+        serializer = JoiningMonthCountSerializer(user_counts, many=True)
+
+        return Response(serializer.data)

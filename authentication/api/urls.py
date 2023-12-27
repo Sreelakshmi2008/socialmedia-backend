@@ -24,8 +24,6 @@ urlpatterns = [
     path('changepass',ChangePassword.as_view(),name='changepass'),
 
 
-   
-    path('joining-month-count/', JoiningMonthCountView.as_view(), name='joining-month-count'),
 
 
 

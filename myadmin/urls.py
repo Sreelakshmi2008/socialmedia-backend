@@ -15,6 +15,10 @@ urlpatterns = [
     path('deletepost/<uuid:id>/',DeletePost.as_view(),name='deletepost'),
     path('deletecomment/<int:id>/',DeleteComment.as_view(),name='deletecomment'),
 
+
+    path('graph',UserCountByMonth.as_view(),name='graph'),
+
+
    
 
 

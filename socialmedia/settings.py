@@ -96,19 +96,14 @@ ASGI_APPLICATION = 'socialmedia.asgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-print("DB_NAME:", os.environ.get('DB_NAME'))
-print("DB_USER:", os.environ.get('DB_USER'))
-print("DB_PASSWORD:", os.environ.get('DB_PASSWORD'))
-print("DB_HOST:", os.environ.get('DB_HOST'))
-print("DB_PORT:", os.environ.get('DB_PORT'))
+
 DATABASES = {
     'default': {
-         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME', 'media'),
-        'USER': os.environ.get('DB_USER', 'root'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', '1234'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "media",
+        "USER": "root",
+        "PASSWORD": "1234",
+        "HOST": "localhost",
         
         
     }
@@ -144,7 +139,7 @@ TIME_ZONE = 'Asia/Kolkata'
 
 USE_I18N = True
 
-USE_TZ = True
+# USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
@@ -198,8 +193,8 @@ AUTHENTICATION_BACKENDS = (
 
 
 # Google configuration
-# BASE_FRONTEND_URL =  "http://localhost:3000"   
-BASE_FRONTEND_URL = "https://my-media.online"
+BASE_FRONTEND_URL =  "http://localhost:3000"   
+# BASE_FRONTEND_URL = "https://my-media.online"
 GOOGLE_OAUTH2_CLIENT_ID = os.environ.get("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY")
 GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET")
 
