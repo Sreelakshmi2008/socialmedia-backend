@@ -39,6 +39,8 @@ class UserLoginSerializer(serializers.Serializer):
         print(data,"serializer data")
     
         return data
+    
+    
 class GetUserSerializer(serializers.ModelSerializer):
      class Meta:
         model = CustomUser

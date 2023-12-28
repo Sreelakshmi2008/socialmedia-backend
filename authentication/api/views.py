@@ -1,6 +1,6 @@
 
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status,generics
 from rest_framework.views import APIView
 from authentication.api.serializers import UserRegisterSerializer,UserLoginSerializer,GetUserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -15,10 +15,10 @@ from rest_framework.decorators import api_view, permission_classes
 import requests
 from authentication import helper
 from .serializers import *
-from django.db.models import Count
+from django.db.models import Count,Q
 from django.db.models.functions import ExtractMonth, ExtractYear
 from django.utils import timezone
-
+from posts.serializer import *
 # user regiatration  view
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -101,7 +101,7 @@ class GetUserView(APIView):
         user_email = request.user
         print(request.user)
         user_details = CustomUser.objects.get(email=user_email)
-        serializer = GetUserSerializer(instance=user_details)
+        serializer = AccountSerializer(instance=user_details,context={'request':request})
         print(serializer.data)
         return Response(serializer.data,status=200)
 
@@ -260,3 +260,36 @@ class JoiningMonthCountView(APIView):
         serializer = JoiningMonthCountSerializer(user_counts, many=True)
 
         return Response(serializer.data)
+    
+
+
+
+class CustomUserSearchAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        query = request.query_params.get('query', None)
+
+        if not query:
+            return Response({'error': 'Query parameter "query" is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = CustomUser.objects.filter(Q(username__icontains=query)|Q(name__icontains=query)).exclude(pk=request.user.id)
+        print(queryset)
+        
+
+
+        serializer = GetUserSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class GetOtherUserView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = CustomUser.objects.all()
+    serializer_class = AccountSerializer
+    lookup_field = 'id'
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance,context={'request':request})
+       
+        post_serializer = GetPostSerializer( Post.objects.filter(user=instance)
+        , many=True,context={'request':request})
+
+        return Response({'posts': post_serializer.data,'user_data': serializer.data})

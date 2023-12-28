@@ -4,7 +4,7 @@ import uuid
 
 class Post(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False) 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser,related_name='myposts', on_delete=models.CASCADE)
     caption = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

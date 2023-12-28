@@ -128,6 +128,8 @@ class CommentSerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     followers_count = serializers.SerializerMethodField()
     followings_count = serializers.SerializerMethodField()
+    is_following = serializers.SerializerMethodField()
+    posts_count =  serializers.SerializerMethodField()
 
  
     def get_followers_count(self, obj):
@@ -135,7 +137,14 @@ class AccountSerializer(serializers.ModelSerializer):
 
     def get_followings_count(self, obj):
         return obj.following.count()  
-
+    
+    def get_is_following(self, obj):
+        print(Follow.objects.filter(follower=self.context['request'].user, following=obj))
+        return Follow.objects.filter(follower=self.context['request'].user, following=obj).exists()
+    
+    def get_posts_count(self, obj):
+        return obj.myposts.count()  
+    
     class Meta:
         model = CustomUser
         fields = [
@@ -151,6 +160,9 @@ class AccountSerializer(serializers.ModelSerializer):
             "is_superuser",
             "followers_count",
             "followings_count",
+            'is_following',
+            'posts_count'
+            
         ]
 
 

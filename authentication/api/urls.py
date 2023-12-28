@@ -9,7 +9,8 @@ urlpatterns = [
     path('register',RegisterView.as_view(),name='register'),
     path('googleuser',GoogleLoginView.as_view(),name='googleuser'),
     path('check-auth/', CheckAuth, name='check-auth'),
-
+    path('search/', CustomUserSearchAPIView.as_view(), name='search'),
+    path('getusers/<int:id>/', GetOtherUserView.as_view(), name='get_user'),
 
      path('login',LoginView.as_view(),name='login'),
      path('user',GetUserView.as_view(),name='user'),
