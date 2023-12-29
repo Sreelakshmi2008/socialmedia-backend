@@ -152,6 +152,7 @@ class GoogleLoginView(APIView):
             return Response({'error': f'Invalid token: {str(e)}'}, status=status.HTTP_400_BAD_REQUEST)
          
       
+from django.conf import settings
 
 class ChangeProfilePicView(APIView):
     permission_classes=[IsAuthenticated]
@@ -164,7 +165,9 @@ class ChangeProfilePicView(APIView):
         u.profile_pic = request.data.get('profile_pic')
         u.save()
         print(u.profile_pic)
-        return Response({'message':"success",'updatedProfilePic':u.profile_pic.url},status=200)
+        full_path = f"{settings.CUSTOM_DOMAIN}{settings.MEDIA_URL}{u.profile_pic}"
+        print(full_path)
+        return Response({'message':"success",'updatedProfilePic':full_path},status=200)
     
 
 @api_view(['GET'])

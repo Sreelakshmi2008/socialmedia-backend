@@ -101,5 +101,6 @@ class UnSeenChatsCount(APIView):
         ).distinct()
 
         total_unseen_chats_count = unseen_chat_rooms.count()
+        print("unseen chats count",total_unseen_chats_count)
         return Response({'count':total_unseen_chats_count},status=status.HTTP_200_OK)
     

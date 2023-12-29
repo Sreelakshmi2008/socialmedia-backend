@@ -195,6 +195,9 @@ AUTHENTICATION_BACKENDS = (
 # Google configuration
 # BASE_FRONTEND_URL =  "http://localhost:3000"   
 BASE_FRONTEND_URL = "https://my-media.online"
+
+# CUSTOM_DOMAIN =  "http://localhost:8000"
+CUSTOM_DOMAIN  = "https://back.my-media.online"
 GOOGLE_OAUTH2_CLIENT_ID = os.environ.get("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY")
 GOOGLE_OAUTH2_CLIENT_SECRET = os.environ.get("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET")
 
