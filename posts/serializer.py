@@ -153,6 +153,7 @@ class AccountSerializer(serializers.ModelSerializer):
             "name",
             "username",
             "email",
+            'phone',
             "profile_pic",
             "last_login",
             "is_staff",
