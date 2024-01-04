@@ -180,6 +180,7 @@ class MyPostView(APIView):
         user = request.user
         p =Post.objects.filter(user=user)
         s = GetPostSerializer(instance=p,many=True,context={'request':request})
+        print(s.data)
         return Response(s.data, status=200)
         
 

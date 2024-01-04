@@ -23,8 +23,10 @@ client = Client(os.environ['TWILIO_ACCOUNT_SID'], os.environ['TWILIO_AUTH_TOKEN'
 service = client.verify.services(os.environ['TWILIO_VERIFY_SERVICE_SID'])
 print(service,"verifyyyyy")
 
+
 # sendin otp to phone using twilio service
 def send(phone):
+
     service.verifications.create(to=phone, channel='sms')
     print(phone)
 
